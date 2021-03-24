@@ -48,11 +48,12 @@ void THPageVariadicContextPre(void)
     saveRegs();
     
     // 分配堆上内存 extra 16 byte + sizeof(THPageVariadicContext)
+    // THPageVariadicContext 大小为 28 * 8 = 224
     __asm volatile ("mov x0, #0xF0");
     __asm volatile ("bl _malloc");
     
     // 返回的分配内存地址保存起来 callee-saved
-    __asm volatile ("str x19, [x0]");
+    __asm volatile ("str x19, [x0]");   // 保存之前的 x19 到堆上，后续在 post 中进行恢复，用 x19 的前提是 interceptor 期间 x19 不会被用到，用到的话 post 部分就挂了，当然这里基本用不到
     __asm volatile ("mov x19, x0");
     
     // 恢复堆栈，避免影响变参所处在的堆栈

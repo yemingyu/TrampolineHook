@@ -20,7 +20,7 @@
 {
     self = [super init];
     if (self) {
-        _redirectFunction = redirectFunction;
+        _redirectFunction = redirectFunction;   // 设置重定向的目标函数地址
     }
     return self;
 }
@@ -74,10 +74,10 @@
     
     if (![self isValidReusablePage:reusablePage]) {
         
-        void *toCopyAddress = [self templatePageAddress];
+        void *toCopyAddress = [self templatePageAddress];   // 汇编中的 hook page 入口地址
         if (!toCopyAddress) return NULL;
         
-        reusablePage = (void *)THCreateDynamicePage(toCopyAddress);
+        reusablePage = (void *)THCreateDynamicePage(toCopyAddress); // 根据入口地址通过 vm_remap copy 2*pagesize 创建一个可操作内存，后面会将内存和数据结构关联起来，便于存取 IMP 等
         if (!reusablePage) return NULL;
         
         [self configurePageLayoutForNewPage:reusablePage];

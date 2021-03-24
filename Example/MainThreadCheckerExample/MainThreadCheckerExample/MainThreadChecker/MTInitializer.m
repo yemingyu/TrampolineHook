@@ -87,14 +87,17 @@ static bool MTAddSwizzler(Class cls, SEL selector)
     
     static THInterceptor *interceptor = nil;
     if (!interceptor) {
+        // 设置重定向到 MTMainThreadChecker
         interceptor = [[THInterceptor alloc] initWithRedirectionFunction:(IMP)MTMainThreadChecker];
     }
     
     if (!interceptor) return false;
     
+    // 根据 originIMP 获取 hook 跳转地址包装类
     THInterceptorResult *result = [interceptor interceptFunction:originIMP];
     if (!result || result.state == THInterceptStateFailed) return false;
     
+    // 设置 origMethod 为 hook 跳转地址
     method_setImplementation(origMethod, result.replacedAddress);
     
     return true;
@@ -103,7 +106,10 @@ static bool MTAddSwizzler(Class cls, SEL selector)
 @implementation MTInitializer
 
 + (void)enableMainThreadChecker
-{    
+{
+    MTAddSwizzler([UIView class], @selector(init));
+    return;
+    
     const char *UIKitImageName = class_getImageName([UIResponder class]);
     if (!UIKitImageName) {
         NSAssert(UIKitImageName != NULL, @"[MTInitializer]::Failed to find UIKItCore/UIKit binary");
